@@ -31,16 +31,16 @@ class MCP_CAN
 {
     private:
     
-    INT8U   m_nExtFlg;                                                  // Identifier Type
-                                                                        // Extended (29 bit) or Standard (11 bit)
-    INT32U  m_nID;                                                      // CAN ID
-    INT8U   m_nDlc;                                                     // Data Length Code
-    INT8U   m_nDta[MAX_CHAR_IN_MESSAGE];                                // Data array
-    INT8U   m_nRtr;                                                     // Remote request flag
-    INT8U   m_nfilhit;                                                  // The number of the filter that matched the message
-    INT8U   MCPCS;                                                      // Chip Select pin number
-    INT8U   mcpMode;                                                    // Mode to return to after configurations are performed.
-    
+    INT8U    m_nExtFlg;                                                  // Identifier Type
+                                                                         // Extended (29 bit) or Standard (11 bit)
+    INT32U   m_nID;                                                      // CAN ID
+    INT8U    m_nDlc;                                                     // Data Length Code
+    INT8U    m_nDta[MAX_CHAR_IN_MESSAGE];                                // Data array
+    INT8U    m_nRtr;                                                     // Remote request flag
+    INT8U    m_nfilhit;                                                  // The number of the filter that matched the message
+    INT8U    MCPCS;                                                      // Chip Select pin number
+    INT8U    mcpMode;                                                    // Mode to return to after configurations are performed.
+    SPIClass *spi_instance;                                               // Instance of the SPI block to be used
 
 /*********************************************************************************************************
  *  mcp2515 driver function 
@@ -128,6 +128,7 @@ public:
     INT8U abortTX(void);                                                // Abort queued transmission(s)
     INT8U setGPO(INT8U data);                                           // Sets GPO
     INT8U getGPI(void);                                                 // Reads GPI
+    void setSpiInstance(SPIClass *instance);                            // Set SPI instance
 };
 
 #endif

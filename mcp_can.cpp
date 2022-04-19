@@ -23,7 +23,7 @@
 */
 #include "mcp_can.h"
 
-#define spi_readwrite SPI.transfer
+#define spi_readwrite spi_instance->transfer
 #define spi_read() spi_readwrite(0x00)
 
 /*********************************************************************************************************
@@ -32,11 +32,11 @@
 *********************************************************************************************************/
 void MCP_CAN::mcp2515_reset(void)                                      
 {
-    SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+    spi_instance->beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
     MCP2515_SELECT();
     spi_readwrite(MCP_RESET);
     MCP2515_UNSELECT();
-    SPI.endTransaction();
+    spi_instance->endTransaction();
     delay(5); // If the MCP2515 was in sleep mode when the reset command was issued then we need to wait a while for it to reset properly
 }
 
@@ -48,13 +48,13 @@ INT8U MCP_CAN::mcp2515_readRegister(const INT8U address)
 {
     INT8U ret;
 
-    SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+    spi_instance->beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
     MCP2515_SELECT();
     spi_readwrite(MCP_READ);
     spi_readwrite(address);
     ret = spi_read();
     MCP2515_UNSELECT();
-    SPI.endTransaction();
+    spi_instance->endTransaction();
 
     return ret;
 }
@@ -66,7 +66,7 @@ INT8U MCP_CAN::mcp2515_readRegister(const INT8U address)
 void MCP_CAN::mcp2515_readRegisterS(const INT8U address, INT8U values[], const INT8U n)
 {
     INT8U i;
-    SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+    spi_instance->beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
     MCP2515_SELECT();
     spi_readwrite(MCP_READ);
     spi_readwrite(address);
@@ -75,7 +75,7 @@ void MCP_CAN::mcp2515_readRegisterS(const INT8U address, INT8U values[], const I
         values[i] = spi_read();
 
     MCP2515_UNSELECT();
-    SPI.endTransaction();
+    spi_instance->endTransaction();
 }
 
 /*********************************************************************************************************
@@ -84,13 +84,13 @@ void MCP_CAN::mcp2515_readRegisterS(const INT8U address, INT8U values[], const I
 *********************************************************************************************************/
 void MCP_CAN::mcp2515_setRegister(const INT8U address, const INT8U value)
 {
-    SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+    spi_instance->beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
     MCP2515_SELECT();
     spi_readwrite(MCP_WRITE);
     spi_readwrite(address);
     spi_readwrite(value);
     MCP2515_UNSELECT();
-    SPI.endTransaction();
+    spi_instance->endTransaction();
 }
 
 /*********************************************************************************************************
@@ -100,7 +100,7 @@ void MCP_CAN::mcp2515_setRegister(const INT8U address, const INT8U value)
 void MCP_CAN::mcp2515_setRegisterS(const INT8U address, const INT8U values[], const INT8U n)
 {
     INT8U i;
-    SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+    spi_instance->beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
     MCP2515_SELECT();
     spi_readwrite(MCP_WRITE);
     spi_readwrite(address);
@@ -109,7 +109,7 @@ void MCP_CAN::mcp2515_setRegisterS(const INT8U address, const INT8U values[], co
         spi_readwrite(values[i]);
 	
     MCP2515_UNSELECT();
-    SPI.endTransaction();
+    spi_instance->endTransaction();
 }
 
 /*********************************************************************************************************
@@ -118,14 +118,14 @@ void MCP_CAN::mcp2515_setRegisterS(const INT8U address, const INT8U values[], co
 *********************************************************************************************************/
 void MCP_CAN::mcp2515_modifyRegister(const INT8U address, const INT8U mask, const INT8U data)
 {
-    SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+    spi_instance->beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
     MCP2515_SELECT();
     spi_readwrite(MCP_BITMOD);
     spi_readwrite(address);
     spi_readwrite(mask);
     spi_readwrite(data);
     MCP2515_UNSELECT();
-    SPI.endTransaction();
+    spi_instance->endTransaction();
 }
 
 /*********************************************************************************************************
@@ -135,12 +135,12 @@ void MCP_CAN::mcp2515_modifyRegister(const INT8U address, const INT8U mask, cons
 INT8U MCP_CAN::mcp2515_readStatus(void)                             
 {
     INT8U i;
-    SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+    spi_instance->beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
     MCP2515_SELECT();
     spi_readwrite(MCP_READ_STATUS);
     i = spi_read();
     MCP2515_UNSELECT();
-    SPI.endTransaction();
+    spi_instance->endTransaction();
     return i;
 }
 
@@ -601,7 +601,7 @@ INT8U MCP_CAN::mcp2515_init(const INT8U canIDMode, const INT8U canSpeed, const I
             mcp2515_modifyRegister(MCP_RXB1CTRL, MCP_RXB_RX_MASK,
             MCP_RXB_RX_ANY);
             break;
-/*          The followingn two functions of the MCP2515 do not work, there is a bug in the silicon.
+/*          The followingn two functions of the MCP2515 do not work, there is a bug in the silicon. */
             case (MCP_STD): 
             mcp2515_modifyRegister(MCP_RXB0CTRL,
             MCP_RXB_RX_MASK | MCP_RXB_BUKT_MASK,
@@ -617,7 +617,7 @@ INT8U MCP_CAN::mcp2515_init(const INT8U canIDMode, const INT8U canSpeed, const I
             mcp2515_modifyRegister(MCP_RXB1CTRL, MCP_RXB_RX_MASK,
             MCP_RXB_RX_EXT);
             break;
-*/
+
             case (MCP_STDEXT): 
             mcp2515_modifyRegister(MCP_RXB0CTRL,
             MCP_RXB_RX_MASK | MCP_RXB_BUKT_MASK,
@@ -704,13 +704,20 @@ void MCP_CAN::mcp2515_write_mf( const INT8U mcp_addr, const INT8U ext, const INT
     }
     else 
     {
+#if 0
         tbufdata[MCP_EID0] = (INT8U) (canid & 0xFF);
         tbufdata[MCP_EID8] = (INT8U) (canid >> 8);
         canid = (uint16_t)(id >> 16);
         tbufdata[MCP_SIDL] = (INT8U) ((canid & 0x07) << 5);
         tbufdata[MCP_SIDH] = (INT8U) (canid >> 3 );
+#else
+        tbufdata[MCP_SIDH] = (uint8_t) (canid >> 3);
+        tbufdata[MCP_SIDL] = (uint8_t) ((canid & 0x07 ) << 5);
+        tbufdata[MCP_EID0] = 0;
+        tbufdata[MCP_EID8] = 0;
+#endif
     }
-    
+
     mcp2515_setRegisterS( mcp_addr, tbufdata, 4 );
 }
 
@@ -825,7 +832,6 @@ INT8U MCP_CAN::begin(INT8U idmodeset, INT8U speedset, INT8U clockset)
 {
     INT8U res;
 
-    SPI.begin();
     res = mcp2515_init(idmodeset, speedset, clockset);
     if (res == MCP2515_OK)
         return CAN_OK;
@@ -1344,6 +1350,11 @@ INT8U MCP_CAN::getGPI(void)
     INT8U res;
     res = mcp2515_readRegister(MCP_TXRTSCTRL) & MCP_BxRTS_MASK;
     return (res >> 3);
+}
+
+void MCP_CAN::setSpiInstance(SPIClass *instance)
+{
+    spi_instance = instance;
 }
 
 /*********************************************************************************************************
